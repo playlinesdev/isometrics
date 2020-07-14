@@ -1,6 +1,6 @@
 name: isometrics
-description: A series of tools for working with isometric projections
-version: 0.0.1
+description: A series of tools for working with isometric
+version: 0.0.1+1
 homepage: https://playlines.web.app
 
 environment:

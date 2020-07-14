@@ -3,11 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isometrics/isometrics.dart';
 
 void main() {
-  test('adds one to input values', () {
-    final calculator = Calculator();
-    expect(calculator.addOne(2), 3);
-    expect(calculator.addOne(-7), -6);
-    expect(calculator.addOne(0), 1);
-    expect(() => calculator.addOne(null), throwsNoSuchMethodError);
+  test('Should detects which tile the screen position is at', () {
+    expect(Isometrics.screenToIsometricMap(32, 32, 128, 64), Offset(0, 0));
+    expect(Isometrics.screenToIsometricMap(64, 32, 128, 64), Offset(1, 0));
+    expect(Isometrics.screenToIsometricMap(0, 64, 128, 64), Offset(1, 1));
   });
 }
