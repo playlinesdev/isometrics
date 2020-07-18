@@ -3,6 +3,22 @@ library isometrics;
 import 'package:flutter/material.dart';
 
 extension IsometricCanvas on Canvas {
+  void drawIsometricSquare(
+    double squareSize, {
+    Offset offset = const Offset(0, 0),
+    Paint paint,
+  }) {
+    paint ??= Paint();
+    Path p = Path();
+    var points = isometricSquareVerts4(squareSize, offset: offset);
+    p.moveTo(points[0].dx, points[0].dy);
+    p.lineTo(points[1].dx, points[1].dy);
+    p.lineTo(points[2].dx, points[2].dy);
+    p.lineTo(points[3].dx, points[3].dy);
+    p.lineTo(points[0].dx, points[0].dy);
+    drawPath(p, paint);
+  }
+
   List<Offset> isometricSquareVerts4(
     double squareSize, {
     Offset offset = const Offset(0, 0),
