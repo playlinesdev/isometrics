@@ -1,6 +1,7 @@
 library isometrics;
 
 import 'package:flutter/material.dart';
+export './extensions/isometric_canvas.dart';
 
 class Isometrics {
   static Offset screenToIsometricMap(
