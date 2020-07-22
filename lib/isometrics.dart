@@ -1,6 +1,7 @@
 library isometrics;
 
 import 'package:flutter/material.dart';
+import 'package:isometrics/coord.dart';
 
 extension IsometricCanvas on Canvas {
   void drawIsometricSquare(
@@ -8,9 +9,8 @@ extension IsometricCanvas on Canvas {
     Offset offset = const Offset(0, 0),
     Paint paint,
   }) {
-    paint ??= Paint();
     Path p = Path();
-    var points = isometricSquareVerts4(squareSize, offset: offset);
+    var points = Isometrics.isometricSquareVerts4(squareSize, offset: offset);
     p.moveTo(points[0].dx, points[0].dy);
     p.lineTo(points[1].dx, points[1].dy);
     p.lineTo(points[2].dx, points[2].dy);
@@ -18,16 +18,18 @@ extension IsometricCanvas on Canvas {
     p.lineTo(points[0].dx, points[0].dy);
     drawPath(p, paint);
   }
+}
 
-  List<Offset> isometricSquareVerts4(
+class Isometrics {
+  static List<Offset> isometricSquareVerts4(
     double squareSize, {
     Offset offset = const Offset(0, 0),
   }) {
     return [
-      screenCoords(0, 0, squareSize, extraOffset: offset), //top
-      screenCoords(1, 0, squareSize, extraOffset: offset), //right
-      screenCoords(1, 1, squareSize, extraOffset: offset), //bottom
-      screenCoords(0, 1, squareSize, extraOffset: offset), //left
+      screenCoords(Coord(0, 0), squareSize, extraOffset: offset), //top
+      screenCoords(Coord(1, 0), squareSize, extraOffset: offset), //right
+      screenCoords(Coord(1, 1), squareSize, extraOffset: offset), //bottom
+      screenCoords(Coord(0, 1), squareSize, extraOffset: offset), //left
     ];
   }
 
@@ -39,14 +41,13 @@ extension IsometricCanvas on Canvas {
   ///canvas.screenCoords(0,0,64, extraOffset: Offset(10,10)) // Offset(74,42)
   ///```
   ///![](https://raw.githubusercontent.com/playlinesdev/isometrics/master/isometric_coords.png?raw=true)
-  Offset screenCoords(
-    int isometricPositionX,
-    int isometricPositionY,
+  static Offset screenCoords(
+    Coord isoCoord,
     double squareSize, {
     Offset extraOffset = const Offset(0, 0),
   }) {
-    var x = (isometricPositionX - isometricPositionY) * squareSize;
-    var y = (isometricPositionY + isometricPositionX) * squareSize / 2;
+    var x = (isoCoord.x - isoCoord.y) * squareSize;
+    var y = (isoCoord.y + isoCoord.x) * squareSize / 2;
     return Offset(x + extraOffset.dx, y + extraOffset.dy);
   }
 
@@ -58,32 +59,19 @@ extension IsometricCanvas on Canvas {
   /// canvas.isometricCoords(Offset(129,67), 64) // (1,0)
   ///```
   ///![](https://raw.githubusercontent.com/playlinesdev/isometrics/master/isometric_coords.png?raw=true)
-  Offset isometricCoords(Offset screenCoords, double squareSize) {
+  static Coord isometricCoords(Offset screenCoords, double squareSize) {
     var tileWidthHalf = squareSize;
     var tileHeightHalf = squareSize / 2;
-    var x =
-        (screenCoords.dx / tileWidthHalf + screenCoords.dy / tileHeightHalf) /
-            2;
-    var y =
-        (screenCoords.dy / tileHeightHalf - (screenCoords.dx / tileWidthHalf)) /
-            2;
-    return Offset(x, y);
+    var scr = screenCoords;
+
+    var x = ((scr.dx / tileWidthHalf) + (scr.dy / tileHeightHalf)) / 2;
+    var y = ((scr.dy / tileHeightHalf) - (scr.dx / tileWidthHalf)) / 2;
+    return Coord(x.round(), y.round());
   }
 }
 
-class Isometrics {
-  static Offset screenToIsometricMap(
-    double x,
-    double y,
-    double tileWidth,
-    double tileHeight,
-  ) {
-    Canvas c;
-    // print('$x:$y');
-    double mapX = (x / (tileWidth / 2) + y / (tileHeight / 2)) / 2;
-    double mapY = (y / (tileHeight / 2) - (x / (tileWidth / 2))) / 2;
-    return Offset(mapX.floorToDouble(), mapY.floorToDouble());
-  }
+class IsoCoord {
+  int x, y;
 }
 
 class IsoGrid {
@@ -94,8 +82,7 @@ class IsoGrid {
       {this.offset = const Offset(0, 0)});
 
   Tile getTileAt(double screenX, double screenY) {
-    var key = Isometrics.screenToIsometricMap(
-        screenX, screenY, tileSquareSize, tileSquareSize);
+    var key = Isometrics.isometricCoords(Offset(screenX, screenY), tileSquareSize);
     var map = getTiles();
     print(key);
     return map[key];
@@ -113,8 +100,7 @@ class IsoGrid {
         var calcY = (x + y) * (tileSquareSize / 2);
         calcY += offset.dy;
 
-        Tile tile =
-            Tile(x: calcX, y: calcY, squareSize: tileSquareSize, key: '$x:$y');
+        Tile tile = Tile(x: calcX, y: calcY, squareSize: tileSquareSize, key: '$x:$y');
         // print('${tile.key}=>$calcX:$calcY');
         tiles.putIfAbsent(Offset(x.toDouble(), y.toDouble()), () => tile);
       }
